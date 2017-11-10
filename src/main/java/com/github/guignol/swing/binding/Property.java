@@ -8,9 +8,7 @@ import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 
 import javax.swing.*;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.event.*;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
@@ -61,7 +59,7 @@ public class Property {
                 .filter(events::contains);
     }
 
-    public static Observable<ActionEvent> onEvent(AbstractButton button) {
+    public static Observable<ActionEvent> onAction(AbstractButton button) {
         final PublishSubject<ActionEvent> onAction = PublishSubject.create();
         final ActionListener actionListener = onAction::onNext;
         return onAction
@@ -107,6 +105,26 @@ public class Property {
                 .unsubscribeOn(SwingScheduler.getInstance());
     }
 
+    public static Observable<int[]> onSelection(JList list) {
+        final BehaviorSubject<int[]> indices = BehaviorSubject.create();
+        final ListSelectionListener selectionListener = e -> {
+            final int[] selectedIndices = list.getSelectedIndices();
+            // distinctUntilChangedだと繋ぎ直したときに流せないので自分で比較する
+            if (!Arrays.equals(indices.getValue(), selectedIndices)) {
+                indices.onNext(selectedIndices);
+            }
+        };
+        return indices
+                .hide()
+                .doOnSubscribe(disposable -> {
+                    list.addListSelectionListener(selectionListener);
+                    indices.onNext(list.getSelectedIndices());
+                })
+                .doOnDispose(() -> list.removeListSelectionListener(selectionListener))
+                .subscribeOn(SwingScheduler.getInstance())
+                .unsubscribeOn(SwingScheduler.getInstance());
+    }
+
     public static <T> Observable<T> onChanged(AbstractButton button,
                                               Function<AbstractButton, T> getter) {
         return onChanged(button, getter, Objects::equals);
@@ -125,7 +143,7 @@ public class Property {
                 return;
             }
             try {
-                // distinctUntilChangedだと繋ぎ直したときに弾いてしまうので自分で比較する
+                // distinctUntilChangedだと繋ぎ直したときに流せないので自分で比較する
                 if (!comparer.test(propertyChanged.getValue(), property)) {
                     propertyChanged.onNext(property);
                 }
