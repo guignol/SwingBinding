@@ -8,7 +8,10 @@ import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
@@ -33,30 +36,44 @@ public class Property {
         final List<Event> events = Arrays.asList(filter == null ? Event.values() : filter);
         final PublishSubject<Event> eventHappened = PublishSubject.create();
         final ComponentListener eventListener = new ComponentListener() {
+
+            final boolean notifyWhenResized = events.contains(Event.RESIZED);
+            final boolean notifyWhenMoved = events.contains(Event.MOVED);
+            final boolean notifyWhenShown = events.contains(Event.SHOWN);
+            final boolean notifyWhenHidden = events.contains(Event.HIDDEN);
+
             @Override
             public void componentResized(ComponentEvent e) {
-                eventHappened.onNext(Event.RESIZED);
+                if (notifyWhenResized) {
+                    eventHappened.onNext(Event.RESIZED);
+                }
             }
 
             @Override
             public void componentMoved(ComponentEvent e) {
-                eventHappened.onNext(Event.MOVED);
+                if (notifyWhenMoved) {
+                    eventHappened.onNext(Event.MOVED);
+                }
             }
-
             @Override
             public void componentShown(ComponentEvent e) {
-                eventHappened.onNext(Event.SHOWN);
+                if (notifyWhenShown) {
+                    eventHappened.onNext(Event.SHOWN);
+                }
             }
 
             @Override
             public void componentHidden(ComponentEvent e) {
-                eventHappened.onNext(Event.HIDDEN);
+                if (notifyWhenHidden) {
+                    eventHappened.onNext(Event.HIDDEN);
+                }
             }
         };
         return eventHappened
                 .doOnSubscribe(disposable -> component.addComponentListener(eventListener))
                 .doOnDispose(() -> component.removeComponentListener(eventListener))
-                .filter(events::contains);
+                .subscribeOn(SwingScheduler.getInstance())
+                .unsubscribeOn(SwingScheduler.getInstance());
     }
 
     public static Observable<ActionEvent> onAction(AbstractButton button) {
