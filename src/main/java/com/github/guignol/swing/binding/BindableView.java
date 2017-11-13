@@ -10,6 +10,10 @@ public class BindableView<T> extends Bindable<T> {
         super(source);
     }
 
+    public void toViewModel(Runnable runnable) {
+        source.subscribe(t -> runnable.run());
+    }
+
     public void toViewModel(Consumer<T> onNext) {
         source.subscribe(onNext);
     }

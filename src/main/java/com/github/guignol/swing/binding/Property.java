@@ -142,6 +142,27 @@ public class Property {
                 .unsubscribeOn(SwingScheduler.getInstance());
     }
 
+    // TODO column
+    public static Observable<int[]> onSelection(JTable table) {
+        final BehaviorSubject<int[]> indices = BehaviorSubject.create();
+        final ListSelectionListener selectionListener = e -> {
+            final int[] selectedIndices = table.getSelectedRows();
+            // distinctUntilChangedだと繋ぎ直したときに流せないので自分で比較する
+            if (!Arrays.equals(indices.getValue(), selectedIndices)) {
+                indices.onNext(selectedIndices);
+            }
+        };
+        return indices
+                .hide()
+                .doOnSubscribe(disposable -> {
+                    table.getSelectionModel().addListSelectionListener(selectionListener);
+                    indices.onNext(table.getSelectedRows());
+                })
+                .doOnDispose(() -> table.getSelectionModel().removeListSelectionListener(selectionListener))
+                .subscribeOn(SwingScheduler.getInstance())
+                .unsubscribeOn(SwingScheduler.getInstance());
+    }
+
     public static <T> Observable<T> onChanged(AbstractButton button,
                                               Function<AbstractButton, T> getter) {
         return onChanged(button, getter, Objects::equals);

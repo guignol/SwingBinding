@@ -1,5 +1,6 @@
 package com.github.guignol.swing.binding;
 
+import com.github.guignol.swing.rx.EventStatus;
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 
@@ -34,5 +35,9 @@ public class Bindable<T> {
 
     public static BindableView<int[]> view(JList list) {
         return new BindableView<>(Property.onSelection(list));
+    }
+
+    public static BindableView<EventStatus> view(JComponent component, Keys.KeyHolder keyHolder) {
+        return view(new Keys.Registry(component).onFired(keyHolder));
     }
 }
