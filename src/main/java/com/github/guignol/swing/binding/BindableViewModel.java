@@ -1,24 +1,31 @@
 package com.github.guignol.swing.binding;
 
 import io.reactivex.Observable;
-import io.reactivex.Observer;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 
-public class BindableViewModel<T> extends Bindable<T> {
+public class BindableViewModel<T> extends Bindable<T> implements Disposable {
+
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     public BindableViewModel(Observable<T> source) {
         super(source);
     }
 
-    public void toView(Consumer<T> onNext) {
-        source.subscribe(onNext);
+    public Disposable toView(Consumer<T> onNext) {
+        final Disposable disposable = source.subscribe(onNext);
+        compositeDisposable.add(disposable);
+        return disposable;
     }
 
-    public void toView(Consumer<T> onNext, Consumer<? super Throwable> onError) {
-        source.subscribe(onNext, onError);
+    @Override
+    public void dispose() {
+        compositeDisposable.dispose();
     }
 
-    public void toView(Observer<T> observer) {
-        source.subscribe(observer);
+    @Override
+    public boolean isDisposed() {
+        return compositeDisposable.isDisposed();
     }
 }
