@@ -6,7 +6,9 @@ import io.reactivex.functions.Function;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 
 public class Bindable<T> {
 
@@ -39,5 +41,9 @@ public class Bindable<T> {
 
     public static BindableView<EventStatus> view(JComponent component, Keys.KeyHolder keyHolder) {
         return view(new Keys.Registry(component).onFired(keyHolder));
+    }
+
+    public static BindableView<MouseEvent> click(Component component) {
+        return new BindableView<>(Property.onClick(component));
     }
 }

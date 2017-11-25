@@ -15,10 +15,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
+import java.awt.event.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -55,6 +52,7 @@ public class Property {
                     eventHappened.onNext(Event.MOVED);
                 }
             }
+
             @Override
             public void componentShown(ComponentEvent e) {
                 if (notifyWhenShown) {
@@ -72,6 +70,22 @@ public class Property {
         return eventHappened
                 .doOnSubscribe(disposable -> component.addComponentListener(eventListener))
                 .doOnDispose(() -> component.removeComponentListener(eventListener))
+                .subscribeOn(SwingScheduler.getInstance())
+                .unsubscribeOn(SwingScheduler.getInstance());
+    }
+
+    public static Observable<MouseEvent> onClick(Component component) {
+        final PublishSubject<MouseEvent> onClick = PublishSubject.create();
+        final MouseAdapter listener = new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                onClick.onNext(e);
+            }
+        };
+        return onClick
+                .hide()
+                .doOnSubscribe(disposable -> component.addMouseListener(listener))
+                .doOnDispose(() -> component.removeMouseListener(listener))
                 .subscribeOn(SwingScheduler.getInstance())
                 .unsubscribeOn(SwingScheduler.getInstance());
     }
