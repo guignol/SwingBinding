@@ -12,8 +12,11 @@ import java.util.concurrent.TimeUnit;
  * Swing Scheduler for RxJava 1.x
  * https://github.com/ReactiveX/RxSwing/blob/0.x/src/main/java/rx/schedulers/SwingScheduler.java
  * <p>
- * Swing Scheduler for RxJava 2.x (not yet merged)
- * https://github.com/UeliKurmann/RxSwing2/blob/master/src/main/java/rx/schedulers/SwingScheduler.java
+ * Swing Scheduler for RxJava 2.x (not yet merged on RxSwing)
+ * https://github.com/jutoft/RxSwing/blob/4b3c2a93dca934c7d857151b4ca1554e9853445e/src/main/java/io/reactivex/schedulers/SwingScheduler.java
+ * <p>
+ * Swing Scheduler for RxJava 2.x (not yet merged on RxSwing2)
+ * https://github.com/UeliKurmann/RxSwing2/blob/8012ae881aa58cbb829433554489f9b83e6411ea/src/main/java/rx/schedulers/SwingScheduler.java
  * <p>
  * Android Scheduler for RxJava 1.x
  * https://github.com/ReactiveX/RxAndroid/blob/1.x/rxandroid/src/main/java/rx/android/schedulers/LooperScheduler.java
@@ -30,6 +33,13 @@ public class SwingScheduler extends Scheduler {
     }
 
     private SwingScheduler() {
+    }
+
+    @Override
+    public Disposable scheduleDirect(Runnable run) {
+        // TODO RxAndroidは何故これをオーバーライドしてるのか
+        // TODO このまま任せると、DisposableTaskでdisposeされる可能性がある？
+        return super.scheduleDirect(run);
     }
 
     @Override
@@ -51,7 +61,6 @@ public class SwingScheduler extends Scheduler {
 
             final Disposable local;
             if (delay == 0) {
-                // Disposables.disposed()だと、元のObservableのdisposeが呼ばれるか不安
                 local = Disposables.empty();
                 if (SwingUtilities.isEventDispatchThread()) {
                     // 即時実行
