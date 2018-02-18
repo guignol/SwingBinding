@@ -19,6 +19,7 @@ import java.awt.event.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Property {
 
@@ -134,6 +135,46 @@ public class Property {
                 .doOnDispose(() -> document.removeDocumentListener(listener))
                 .subscribeOn(SwingScheduler.getInstance())
                 .unsubscribeOn(SwingScheduler.getInstance());
+    }
+
+    public static Observable<Integer> onHovered(JList list) {
+        final PublishSubject<Integer> hovered = PublishSubject.create();
+        final MouseAdapter adapter = new MouseAdapter() {
+            private boolean entered = false;
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                entered = true;
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                entered = false;
+                hovered.onNext(-1);
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                if (entered) {
+                    hovered.onNext(list.locationToIndex(e.getPoint()));
+                } else {
+                    hovered.onNext(-1);
+                }
+            }
+        };
+        return hovered
+                .hide()
+                .doOnSubscribe(disposable -> {
+                    list.addMouseListener(adapter);
+                    list.addMouseMotionListener(adapter);
+                })
+                .doOnDispose(() -> {
+                    list.removeMouseListener(adapter);
+                    list.removeMouseMotionListener(adapter);
+                })
+                .subscribeOn(SwingScheduler.getInstance())
+                .unsubscribeOn(SwingScheduler.getInstance())
+                .distinctUntilChanged();
     }
 
     public static Observable<int[]> onSelection(JList list) {
