@@ -8,10 +8,7 @@ import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 
 import javax.swing.*;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.*;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
@@ -19,7 +16,6 @@ import java.awt.event.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Property {
 
@@ -214,6 +210,17 @@ public class Property {
                     indices.onNext(table.getSelectedRows());
                 })
                 .doOnDispose(() -> table.getSelectionModel().removeListSelectionListener(selectionListener))
+                .subscribeOn(SwingScheduler.getInstance())
+                .unsubscribeOn(SwingScheduler.getInstance());
+    }
+
+    public static Observable<ChangeEvent> onChanged(JViewport viewport) {
+        final BehaviorSubject<ChangeEvent> onChanged = BehaviorSubject.create();
+        final ChangeListener changeListener = onChanged::onNext;
+        return onChanged
+                .hide()
+                .doOnSubscribe(disposable -> viewport.addChangeListener(changeListener))
+                .doOnDispose(() -> viewport.removeChangeListener(changeListener))
                 .subscribeOn(SwingScheduler.getInstance())
                 .unsubscribeOn(SwingScheduler.getInstance());
     }
