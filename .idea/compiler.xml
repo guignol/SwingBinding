@@ -4,6 +4,8 @@
     <bytecodeTargetLevel>
       <module name="library_main" target="1.8" />
       <module name="library_test" target="1.8" />
+      <module name="processor_main" target="1.8" />
+      <module name="processor_test" target="1.8" />
       <module name="SwingBinding_main" target="1.8" />
       <module name="SwingBinding_test" target="1.8" />
     </bytecodeTargetLevel>

@@ -1,0 +1,14 @@
+apply plugin: 'java-library'
+
+sourceCompatibility = 1.8
+
+group 'guignol'
+version '1.0-SNAPSHOT'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+dependencies {
+    compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc4'
+}
