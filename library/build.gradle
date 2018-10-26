@@ -2,8 +2,8 @@ apply plugin: 'java-library'
 
 sourceCompatibility = 1.8
 
-group 'guignol'
-version '1.0-SNAPSHOT'
+group 'com.github.guignol.swing'
+version '0.1'
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'

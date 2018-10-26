@@ -1,3 +1,3 @@
-rootProject.name = 'SwingBinding'
+//rootProject.name = 'SwingBinding'
 include 'library'
 include 'processor'
