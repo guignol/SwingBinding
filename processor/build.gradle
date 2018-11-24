@@ -3,7 +3,7 @@ apply plugin: 'java-library'
 sourceCompatibility = 1.8
 
 group 'com.github.guignol.swing'
-version '0.1'
+version '0.1.1'
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
@@ -11,6 +11,6 @@ tasks.withType(JavaCompile) {
 
 dependencies {
     compileOnly group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc4'
-    compile project(":library")
-    compile 'com.squareup:javapoet:1.9.0'
+    implementation project(":library")
+    api 'com.squareup:javapoet:1.9.0'
 }
